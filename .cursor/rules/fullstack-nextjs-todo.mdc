@@ -1,0 +1,148 @@
+---
+description: Full-stack Next.js Todo Application Development Guidelines
+globs: ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "app/**/*", "src/**/*", "pages/**/*", "api/**/*"]
+alwaysApply: false
+---
+
+# Full-Stack Next.js Todo Application Rules
+
+## Architecture & Project Structure
+
+- Use Next.js App Router (app directory) for new features
+- Organize components in `src/app/components/`
+- Place API routes in `src/app/api/`
+- Use TypeScript for all new files
+- Follow the repository pattern for data access
+- Keep business logic in service layers
+
+## Frontend Development
+
+### React Components
+- Use functional components with React hooks
+- Prefer named exports for components
+- Use TypeScript interfaces for props
+- Implement proper error boundaries
+- Use React.memo for performance optimization when needed
+
+### Styling
+- Use Tailwind CSS for styling
+- Follow mobile-first responsive design
+- Use consistent spacing and color schemes
+- Implement dark mode support when applicable
+
+### State Management
+- Use React hooks (useState, useEffect) for local state
+- Consider Zustand or Redux Toolkit for global state if needed
+- Use React Query/TanStack Query for server state management
+
+## Backend Development
+
+### API Routes
+- Use Next.js API routes in `app/api/` directory
+- Implement proper HTTP status codes
+- Use middleware for authentication and validation
+- Follow RESTful principles:
+  - GET /api/todos - List todos
+  - POST /api/todos - Create todo
+  - PUT /api/todos/[id] - Update todo
+  - DELETE /api/todos/[id] - Delete todo
+
+### Database
+- Use Supabase for database operations and real-time features
+- Use Supabase JavaScript client for database interactions
+- Define TypeScript types for database tables
+- Use Supabase migrations for schema changes
+- Leverage Supabase's built-in authentication and real-time subscriptions
+
+### Validation
+- Use Zod for API request/response validation
+- Validate data on both client and server
+- Return meaningful error messages
+
+## Todo Application Specific Features
+
+### Core Todo Functionality
+- Create, read, update, delete todos
+- Mark todos as complete/incomplete
+- Add due dates and priorities
+- Category/tag system for organization
+- Search and filter capabilities
+
+### Data Model
+```typescript
+interface Todo {
+  id: string;
+  title: string;
+  description?: string;
+  completed: boolean;
+  priority: 'low' | 'medium' | 'high';
+  dueDate?: Date;
+  category?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+```
+
+### UI Components to Implement
+- TodoList component
+- TodoItem component
+- AddTodoForm component
+- FilterBar component
+- SearchInput component
+
+## Code Quality & Best Practices
+
+### Error Handling
+- Implement try-catch blocks in API routes
+- Use error boundaries in React components
+- Provide user-friendly error messages
+- Log errors appropriately
+
+### Performance
+- Implement proper loading states
+- Use React.Suspense for code splitting
+- Optimize images with Next.js Image component
+- Implement pagination for large todo lists
+
+### Security
+- Sanitize user inputs
+- Implement proper authentication if required
+- Use HTTPS in production
+- Validate and sanitize data on server-side
+
+### Testing
+- Write unit tests for utility functions
+- Test React components with React Testing Library
+- Test API routes with integration tests
+- Maintain good test coverage
+
+## File Naming Conventions
+- Use kebab-case for file names
+- Use PascalCase for component files
+- Use camelCase for utility functions
+- Add `.test.ts` or `.spec.ts` for test files
+
+## Development Workflow
+- Use conventional commits
+- Run linter and formatter before commits
+- Write meaningful commit messages
+- Keep components small and focused
+- Extract reusable logic into custom hooks
+
+## Environment Configuration
+- Use `.env.local` for local development
+- Configure Supabase environment variables:
+  - NEXT_PUBLIC_SUPABASE_URL
+  - NEXT_PUBLIC_SUPABASE_ANON_KEY
+  - SUPABASE_SERVICE_ROLE_KEY (for server-side operations)
+- Keep sensitive data in environment variables
+- Use different configs for dev/staging/production
+- Document required environment variables
+
+When implementing new features:
+1. Plan the component structure
+2. Create the UI components first
+3. Implement the API endpoints
+4. Connect frontend to backend
+5. Add proper error handling and loading states
+6. Write tests for critical functionality

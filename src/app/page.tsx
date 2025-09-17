@@ -1,103 +1,157 @@
-import Image from "next/image";
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import AddTodoForm from './components/AddTodoForm';
+import TodoList from './components/TodoList';
+import FilterBar from './components/FilterBar';
+import { Todo, CreateTodoRequest, UpdateTodoRequest, TodoFilter, TodoSort } from '@/types/todo';
+import { CheckSquare } from 'lucide-react';
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [filter, setFilter] = useState<TodoFilter>('all');
+  const [search, setSearch] = useState('');
+  const [sort, setSort] = useState<TodoSort>('created_at');
+  const [order, setOrder] = useState<'asc' | 'desc'>('desc');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+  // Fetch todos from API
+  const fetchTodos = useCallback(async () => {
+    try {
+      const params = new URLSearchParams({
+        filter,
+        search,
+        sort,
+        order,
+      });
+
+      const response = await fetch(`/api/todos?${params}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch todos');
+      }
+
+      const data = await response.json();
+      setTodos(data);
+    } catch (error) {
+      console.error('Error fetching todos:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filter, search, sort, order]);
+
+  // Add new todo
+  const handleAddTodo = async (todoData: CreateTodoRequest) => {
+    try {
+      const response = await fetch('/api/todos', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(todoData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to create todo');
+      }
+
+      const newTodo = await response.json();
+      setTodos(prevTodos => [newTodo, ...prevTodos]);
+    } catch (error) {
+      console.error('Error creating todo:', error);
+      throw error;
+    }
+  };
+
+  // Update todo
+  const handleUpdateTodo = async (id: string, updates: UpdateTodoRequest) => {
+    try {
+      const response = await fetch(`/api/todos/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update todo');
+      }
+
+      const updatedTodo = await response.json();
+      setTodos(prevTodos =>
+        prevTodos.map(todo => (todo.id === id ? updatedTodo : todo))
+      );
+    } catch (error) {
+      console.error('Error updating todo:', error);
+      throw error;
+    }
+  };
+
+  // Delete todo
+  const handleDeleteTodo = async (id: string) => {
+    try {
+      const response = await fetch(`/api/todos/${id}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete todo');
+      }
+
+      setTodos(prevTodos => prevTodos.filter(todo => todo.id !== id));
+    } catch (error) {
+      console.error('Error deleting todo:', error);
+      throw error;
+    }
+  };
+
+  // Fetch todos on component mount and when filters change
+  useEffect(() => {
+    fetchTodos();
+  }, [fetchTodos]);
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-4xl mx-auto px-4 py-8">
+        {/* Header */}
+        <header className="text-center mb-8">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <CheckSquare size={32} className="text-blue-600" />
+            <h1 className="text-3xl font-bold text-gray-900">Todo App</h1>
+          </div>
+          <p className="text-gray-600">
+            Stay organized and productive with your personal todo manager
+          </p>
+        </header>
+
+        {/* Add Todo Form */}
+        <AddTodoForm onAddTodo={handleAddTodo} />
+
+        {/* Filter Bar */}
+        <FilterBar
+          filter={filter}
+          onFilterChange={setFilter}
+          search={search}
+          onSearchChange={setSearch}
+          sort={sort}
+          onSortChange={setSort}
+          order={order}
+          onOrderChange={setOrder}
+        />
+
+        {/* Todo List */}
+        <TodoList
+          todos={todos}
+          onUpdate={handleUpdateTodo}
+          onDelete={handleDeleteTodo}
+          isLoading={isLoading}
+        />
+
+        {/* Footer */}
+        <footer className="text-center mt-12 text-gray-500 text-sm">
+          <p>Built with Next.js, Supabase, and Tailwind CSS</p>
+        </footer>
+      </div>
     </div>
   );
 }
