@@ -1,6 +1,6 @@
 ---
 description: Full-stack Next.js Todo Application Development Guidelines
-globs: ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "app/**/*", "src/**/*", "pages/**/*", "api/**/*"]
+globs: ["**/*.tsx", "**/*.ts", "**/*.js", "**/*.jsx", "**/*.mjs", "src/**/*", "docs/**/*", "*.md", "*.json"]
 alwaysApply: false
 ---
 
